@@ -128,7 +128,7 @@ def remove_duplicates(input_list):
     return result_list
 
 
-@archive_result(f"gettopics-category_$-page_$")
+@archive_result("gettopics-category_$-page_$")
 @lru_cache(maxsize=15)
 def get_topics(category, page):
     """
@@ -146,7 +146,7 @@ def get_topics(category, page):
         return {"error": True, "message": "lib_scratchdbdown"}
 
 
-@archive_result(f"getpostinfo-$")
+@archive_result("getpostinfo-$")
 @lru_cache(maxsize=15)
 def get_post_info(post_id):
     """
@@ -169,7 +169,7 @@ def get_author_of(post_id):
     # return r.json()['username']
 
 
-@archive_result(f"projectinfo-id_$")
+@archive_result("projectinfo-id_$")
 @lru_cache(maxsize=15)
 def get_project_info(project_id):
     try:
@@ -205,7 +205,7 @@ def get_comments(project_id):
     return r.json()
 
 
-@archive_result(f"ocular-username_$")
+@archive_result("ocular-username_$")
 @lru_cache(maxsize=5)
 def get_ocular(username):
     """
@@ -225,7 +225,7 @@ def get_ocular(username):
     return info.json()
 
 
-@archive_result(f"aviate-username_$")
+@archive_result("aviate-username_$")
 @lru_cache(maxsize=5)
 def get_aviate(username):
     """
@@ -234,9 +234,7 @@ def get_aviate(username):
     # Aviate API is much simple very wow
     # Better than ocular API imo
     r = requests.get(f"https://aviate.scratchers.tech/api/{username}", timeout=10)
-    if not r["success"]:
-        return ""
-    return r["status"]
+    return "" if not r["success"] else r["status"]
 
 def init_db():
     conn = sqlite3.connect(env["DB_LOCATION"])
@@ -309,7 +307,7 @@ def get_topic_posts(topic_id, page=0, order="oldest"):
 def get_pfp_url(username, size=90):
     r = requests.get(f"https://api.scratch.mit.edu/users/{username}", timeout=10)
 
-    return r.json()["profile"]["images"][str(size) + "x" + str(size)]
+    return r.json()["profile"]["images"][f"{str(size)}x{str(size)}"]
 
 
 def get_redirect_url() -> str:
@@ -382,7 +380,7 @@ def parse_cmd(cmd: str):
         return None
     return_cmd = [parse_token(token, i) for i, token in enumerate(cmd.split(" "))]
 
-    return return_cmd[0] + "(" + ", ".join(return_cmd[1:]) + ")"
+    return f"{return_cmd[0]}(" + ", ".join(return_cmd[1:]) + ")"
 
 
 if __name__ == "__main__":
