@@ -15,7 +15,19 @@ from flask import (
     redirect,
 )
 import multiprocessing as mp
-    
+import torch
+from transformers import LlamaTokenizer, LlamaForCausalLM
+
+## v2 models
+model_path = "openlm-research/open_llama_7b_v2"
+
+tokenizer = LlamaTokenizer.from_pretrained(model_path)
+model = LlamaForCausalLM.from_pretrained(
+    model_path,
+    torch_dtype=torch.float16,
+    device_map="auto",
+)
+
 from werkzeug import exceptions as werkexcept
 
 import dazzle
@@ -39,7 +51,7 @@ user_data = dict(
     signed_in=True,
     use_sb2=False,
     sb_scale=1,
-    use_old_layout=False
+    use_old_layout=False,
 )
 
 
@@ -324,6 +336,20 @@ def settings():
     )
 
 
+# make a route called /api/ai/generate with a POST method that has one paramater, "prompt" and returns the AI generated response
+@app.post("/api/ai/generate")
+def generate():
+    prompt = request.json["prompt"]
+    response = model.generate(
+        prompt,
+        max_new_tokens=100,
+        do_sample=True,
+        top_p=0.95,
+        temperature=0.9,
+    )
+    return response
+
+
 @app.get("/downloads")
 def downloads():
     """old download page"""
@@ -338,12 +364,10 @@ def dl_mockup():
 @app.get("/pin-subforum/<sf>")
 def pin_sub(sf):
     """route that pins a subforum"""
+
     def flatten_comprehension(matrix):
         return [item for row in matrix for item in row]
 
-    if sf not in flatten_comprehension([subforum for subforum in [subforums for _, subforums in subforums_data]]):
-        return '<script>alert("Haha nice try ;)"); history.back()</script>'
-        
     if sf not in user_data["pinned_subforums"]:
         arr = user_data["pinned_subforums"].copy()
         arr.append(sf)
@@ -385,25 +409,23 @@ def search():
     result = dazzle.search_for_projects(query)
     return stream_template("search.html", result=result, query=query)
 
+
 # Studio pages
 @app.get("/studios/<id>/<tab>")
 def studios(id, tab):
     data = dazzle.get_studio_data(id)
-    if 'error' in data.keys():
-        return render_template(
-            "scratchapi-error.html",
-            message=data['message']
-        )
+    if "error" in data.keys():
+        return render_template("scratchapi-error.html", message=data["message"])
 
     return render_template(
         "studio.html",
-        studio_name=data['title'],
+        studio_name=data["title"],
         studio_description=data["description"],
         studio_id=id,
         studio_tab=tab,
-        studio_banner=data['image'],
-        studio_stats=data['stats'],
-        name_len=len(data['title']),
+        studio_banner=data["image"],
+        studio_stats=data["stats"],
+        name_len=len(data["title"]),
     )
 
 
@@ -411,6 +433,7 @@ def studios(id, tab):
 def err404(e: Exception):
     # route for error
     return render_template("_error.html", errdata=e), 404
+
 
 # CHANGE THIS IF YOU'RE RUNNING A PUBLIC SERVER
 if __name__ == "__main__":

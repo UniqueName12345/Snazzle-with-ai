@@ -1,6 +1,6 @@
-# Snazzle
+# Snazzle + AI
 
-A better frontend for Scratch, built by the community, for the community
+A better frontend for Scratch, built by the community, for the community. Oh, and native AI support is included. And also some restrictions are removed (like being able to pin any subforum at will)
 
 Snazzle is the first attempt at a better Scratch website. It aims to be feature-rich and easy and quick to use, incorporating many things that the Scratch community has been wanting for years.
 
@@ -31,8 +31,4 @@ But for now, this is how you do it:
 
 ## Hosting on Replit
 
-Some features currently won't work properly due to usage of Scratch's API. With this in mind, [there's a version on replit that works around these limitations.](https://snazzle-repl.redstonescratch.repl.co/) To contribute to that, just fork it and make changes to your fork. However, because of these limitations, there are the following disadvantages to using the repl:
-
-1. No projects or studios on the front page
-2. All profile pictures are the default one
-3. May be slower
+Hosting on Replit is impossible as Replit does not have enough memory to run OpenLLaMA (which is the model used).
