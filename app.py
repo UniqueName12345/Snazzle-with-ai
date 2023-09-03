@@ -4,6 +4,7 @@
 https://github.com/redstone-scratch/Snazzle/
 """
 
+
 from os import listdir
 from datetime import timedelta
 from flask import (
@@ -15,16 +16,16 @@ from flask import (
     redirect,
 )
 import multiprocessing as mp
-    
+
 from werkzeug import exceptions as werkexcept
 
 import dazzle
 
-REPLIT_MODE = True if dazzle.env["REPLIT_MODE"] == "yes" else False
-USE_SCRATCHDB = True if dazzle.env["USE_SCRATCHDB"] == "yes" else False
+REPLIT_MODE = dazzle.env["REPLIT_MODE"] == "yes"
+USE_SCRATCHDB = dazzle.env["USE_SCRATCHDB"] == "yes"
 HOST, PORT = dazzle.env["SERVER_HOST"].split(":")
-DEBUG = True if dazzle.env["DEBUG"] == "yes" else False
-FLASK_DEBUG = True if dazzle.env["FLASK_DEBUG"] == "yes" else False
+DEBUG = dazzle.env["DEBUG"] == "yes"
+FLASK_DEBUG = dazzle.env["FLASK_DEBUG"] == "yes"
 
 app = Flask(__name__)
 
@@ -258,8 +259,10 @@ def project(project_id):
             project_name = "A scratch project..."
             creator_name = "A scratch user..."
     theme = user_data["theme"]
-    if theme == "choco":  # add new elif at the end
+    if theme == "choco":
         colour = "%23282320"
+    elif theme == "gruvbox":
+        colour = "%23282828"
     elif theme == "hackerman":
         colour = "%23212820"
     elif theme == "ice":
@@ -268,8 +271,6 @@ def project(project_id):
         colour = "%23c8c8c8"
     elif theme == "nord":
         colour = "%232e3440"
-    elif theme == "gruvbox":
-        colour = "%23282828"
     # elif theme == "new theme":
     # colour = "%23[hex colour]"
     ocular = dazzle.get_ocular(creator_name)
@@ -277,28 +278,16 @@ def project(project_id):
     if ocular_colour in (None, "null"):
         ocular_colour = "#999999"
     else:
-        creator_name = str(creator_name) + " ●"  # add the dot
+        creator_name += " ●"
     ocular_colour = f"color:{ocular_colour}"
-    if not DEBUG:
-        return stream_template(
-            "projects.html",
-            project_id=project_id,
-            colour=colour,
-            name=project_name,
-            creator_name=creator_name,
-            ocularcolour=ocular_colour,
-        )
-    else:
-        # scomments = scratchdb.get_comments(project_id)
-        return stream_template(
-            "projects.html",
-            project_id=project_id,
-            colour=colour,
-            name=project_name,
-            creator_name=creator_name,
-            # comments=[{"username": comment["author"]["username"], "content": comment["content"], "visibility": comment["visibility"]} for comment in scomments],
-            ocularcolour=ocular_colour,
-        )
+    return stream_template(
+        "projects.html",
+        project_id=project_id,
+        colour=colour,
+        name=project_name,
+        creator_name=creator_name,
+        ocularcolour=ocular_colour,
+    )
 
 
 @app.route("/settings", methods=["GET"])
@@ -341,9 +330,11 @@ def pin_sub(sf):
     def flatten_comprehension(matrix):
         return [item for row in matrix for item in row]
 
-    if sf not in flatten_comprehension([subforum for subforum in [subforums for _, subforums in subforums_data]]):
+    if sf not in flatten_comprehension(
+        [subforums for _, subforums in subforums_data]
+    ):
         return '<script>alert("Haha nice try ;)"); history.back()</script>'
-        
+
     if sf not in user_data["pinned_subforums"]:
         arr = user_data["pinned_subforums"].copy()
         arr.append(sf)
